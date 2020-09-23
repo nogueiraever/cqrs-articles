@@ -1,0 +1,17 @@
+version: "3.1"
+
+services:
+  articles_rabbitmq:
+    container_name: articles_rabbitmq
+    image: rabbitmq:management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=likebutton
+      - RABBITMQ_DEFAULT_PASS=likebutton
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - articles-network
+networks:
+  articles-network:
+    driver: bridge

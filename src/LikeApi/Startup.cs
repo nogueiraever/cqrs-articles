@@ -1,7 +1,8 @@
-using Core.Configurations;
+using Core;
+using IoC;
+using IoC.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
@@ -38,8 +39,8 @@ namespace LikeApi
                 options.Level = CompressionLevel.Fastest;
             });
 
-            var assemblyAplicao = AppDomain.CurrentDomain.Load("Core");
-            services.AddMediatR(assemblyAplicao);
+            var assemblyApplication = AppDomain.CurrentDomain.Load("Core");
+            services.AddMediatR(assemblyApplication);
 
             services.Configure<ApiBehaviorOptions>(options =>
             {
@@ -53,15 +54,25 @@ namespace LikeApi
             })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
-            var awsConfiguration = configuration.GetSection(nameof(Aws)).Get<Aws>();
+            services.RegisterDependencies();
 
-            services.Configure<Aws>(c =>
+            var messagingConfiguration = configuration.GetSection(nameof(Messaging)).Get<Messaging>();
+
+            services.Configure<Messaging>(c =>
             {
-                c.AccessKeyId = awsConfiguration.AccessKeyId;
-                c.SecretAccessKey = awsConfiguration.SecretAccessKey;
-                c.Queues = awsConfiguration.Queues;
-                c.Region = awsConfiguration.Region;
+                c.Exchanges = messagingConfiguration.Exchanges;
+                c.Queues = messagingConfiguration.Queues;
             });
+
+            var rabbitMQConfiguration = configuration.GetSection(nameof(RabbitMQConfiguration)).Get<RabbitMQConfiguration>();
+            _ = services.Configure<RabbitMQConfiguration>(c =>
+              {
+                  c.Hostname = rabbitMQConfiguration.Hostname;
+                  c.Username = rabbitMQConfiguration.Username;
+                  c.Password = rabbitMQConfiguration.Password;
+              });
+
+            services.AddRabbit(messagingConfiguration, rabbitMQConfiguration);
         }
     }
 }

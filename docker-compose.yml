@@ -1,0 +1,59 @@
+version: '3.1'
+
+volumes:
+  postgres-data: {}
+
+services:
+  articles-api:
+    container_name: articles-api
+    image: articles-api
+    build:
+      context: .
+      dockerfile: ./src/LikeApi/Dockerfile
+    ports:
+      - '8080:80'
+    networks:
+      - articles-network
+    depends_on:
+      - 'articles-db'
+      - 'articles_rabbitmq'
+      - 'articles-flyway'
+    env_file:
+      - articles-api.env    
+  articles-db:
+    container_name: articles-db
+    restart: always
+    image: postgres:11-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: articles_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - articles-network
+  articles-flyway:
+    container_name: articles-flyway
+    image: boxfuse/flyway:5.2.4
+    command: -url=jdbc:postgresql://articles-db:5432/articles_db?user=postgres&password=postgres -locations='filesystem:/opt/scripts' -outOfOrder=true migrate
+    volumes:
+      - ./scripts:/opt/scripts
+    depends_on:
+      - 'articles-db'
+    networks:
+      - articles-network
+  articles_rabbitmq:
+    container_name: articles_rabbitmq
+    image: rabbitmq:management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=likebutton
+      - RABBITMQ_DEFAULT_PASS=likebutton
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - articles-network
+networks:
+  articles-network:
+    driver: bridge
