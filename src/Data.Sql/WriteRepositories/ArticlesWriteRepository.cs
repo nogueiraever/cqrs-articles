@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using System;
 using System.Threading.Tasks;
 
 namespace Data.Sql
@@ -14,7 +15,7 @@ namespace Data.Sql
             connectionString = configuration.GetConnectionString("ArticlesPgSql");
         }
 
-        public async Task LikeAsync(long articleId, int likes)
+        public async Task LikeAsync(Guid articleId, int likes)
         {
             using (var connection = new NpgsqlConnection(connectionString))
             {

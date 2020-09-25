@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Text.Json.Serialization;
 
 namespace Core
 {
@@ -25,6 +26,8 @@ namespace Core
 
         public object Data { get; set; }
         public IEnumerable<string> Messages { get; set; }
+
+        [JsonIgnore]
         public HttpStatusCode StatusCode { get; set; }
     }
 }

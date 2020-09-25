@@ -1,4 +1,5 @@
 using Core;
+using Data.Mongo;
 using IoC;
 using IoC.Extensions;
 using MediatR;
@@ -65,14 +66,34 @@ namespace LikeApi
             });
 
             var rabbitMQConfiguration = configuration.GetSection(nameof(RabbitMQConfiguration)).Get<RabbitMQConfiguration>();
+
             _ = services.Configure<RabbitMQConfiguration>(c =>
-              {
-                  c.Hostname = rabbitMQConfiguration.Hostname;
-                  c.Username = rabbitMQConfiguration.Username;
-                  c.Password = rabbitMQConfiguration.Password;
-              });
+            {
+                c.Hostname = rabbitMQConfiguration.Hostname;
+                c.Username = rabbitMQConfiguration.Username;
+                c.Password = rabbitMQConfiguration.Password;
+            });
 
             services.AddRabbit(messagingConfiguration, rabbitMQConfiguration);
+
+            //MockData
+            CreateMockedData(services);
+        }
+
+        private static void CreateMockedData(IServiceCollection services)
+        {
+            var mongoRepository = services.BuildServiceProvider().GetRequiredService<IArticlesMongoRepository>();
+            var articleId = Guid.Parse("2ae90450-9040-4f3d-900b-cd7565a1225c");
+            var mockArticle = mongoRepository.GetById(articleId).Result;
+            if (mockArticle == null)
+            {
+                mockArticle = new Core.Domain.Article()
+                {
+                    Id = articleId,
+                    Description = "Example description"
+                };
+                mongoRepository.Save(mockArticle);
+            }
         }
     }
 }

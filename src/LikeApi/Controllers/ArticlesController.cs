@@ -1,6 +1,8 @@
 ﻿using Core.Commands;
+using Core.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace LikeApi.Controllers
@@ -9,8 +11,14 @@ namespace LikeApi.Controllers
     [ApiController]
     public class ArticlesController : ControllerBase
     {
+        [HttpGet("{articleId}")]
+        public async Task<IActionResult> GetArticleLikes(Guid articleId, [FromServices] IMediator mediator)
+        {
+            return Ok(await mediator.Send(new GetArticleLikesQuery(articleId)));
+        }
+
         [HttpPost("{articleId}")]
-        public async Task<IActionResult> Like(long articleId, [FromServices] IMediator mediator)
+        public async Task<IActionResult> Like(Guid articleId, [FromServices] IMediator mediator)
         {
             return Ok(await mediator.Send(new LikeArticleCommand(articleId)));
         }
