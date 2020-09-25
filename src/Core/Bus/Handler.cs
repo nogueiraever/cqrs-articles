@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,9 +9,9 @@ namespace Core
     {
         public abstract Task<Response> Handle(T request, CancellationToken cancellationToken);
 
-        protected Response Error(string message)
+        protected Response Error(string message, HttpStatusCode httpStatusCode = HttpStatusCode.InternalServerError)
         {
-            return new Response(message);
+            return new Response(message, httpStatusCode);
         }
 
         protected Response Success(object data)

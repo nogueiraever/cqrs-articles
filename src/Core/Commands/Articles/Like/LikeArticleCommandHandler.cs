@@ -19,7 +19,7 @@ namespace Core.Commands
 
         public override async Task<Response> Handle(LikeArticleCommand request, CancellationToken cancellationToken)
         {
-            await mediator.Send(new PublishCommand(messaging.Exchanges.Jobs, messaging.Queues.Articles.QueueName, messaging.Queues.Articles.LikeRoute));
+            await mediator.Send(new PublishCommand(messaging.Exchanges.Jobs, messaging.Queues.Articles.QueueName, messaging.Queues.Articles.LikeRoute, request.ArticleId));
             return await Task.FromResult(Success("Article liked."));
         }
     }

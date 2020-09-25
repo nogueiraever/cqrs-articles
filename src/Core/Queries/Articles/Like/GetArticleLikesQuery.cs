@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace Core.Commands
+namespace Core.Queries
 {
-    public class LikeArticleCommand : Request
+    public class GetArticleLikesQuery : Request
     {
-        public LikeArticleCommand(Guid articleId)
+        public GetArticleLikesQuery(Guid articleId)
         {
             ArticleId = articleId;
         }

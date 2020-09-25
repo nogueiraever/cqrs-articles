@@ -1,19 +1,26 @@
-﻿namespace Core.Domain
+﻿using System;
+
+namespace Core.Domain
 {
     public class Article
     {
+        public Article()
+        {
+            Id = Guid.NewGuid();
+        }
+
         public string Description { get; set; }
-        public long Id { get; set; }
+        public Guid Id { get; set; }
         public int Likes { get; set; }
 
         public void Dislike()
         {
-            Likes++;
+            Likes--;
         }
 
         public void Like()
         {
-            Likes--;
+            Likes++;
         }
     }
 }

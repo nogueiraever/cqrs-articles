@@ -4,8 +4,61 @@ volumes:
   postgres-data: {}
 
 services:
+  mongo:
+    image: mongo:4.2-bionic
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=likebutton
+    ports:
+    - 27017:27017
+    networks:
+      - articles-network
+  articles-db:
+    container_name: articles-db
+    restart: always
+    image: postgres:11-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: articles_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    depends_on:
+     - 'articles_rabbitmq'
+    networks:
+      - articles-network
+  articles-flyway:
+    container_name: articles-flyway
+    restart: on-failure
+    image: boxfuse/flyway:5.2.4
+    command: -url=jdbc:postgresql://articles-db:5432/articles_db?user=postgres&password=postgres -locations='filesystem:/opt/scripts' -outOfOrder=true migrate
+    volumes:
+      - ./scripts:/opt/scripts
+    depends_on:
+      - 'articles-db'
+    networks:
+      - articles-network
+  articles_rabbitmq:
+    container_name: articles-rabbitmq
+    image: rabbitmq:management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=likebutton
+      - RABBITMQ_DEFAULT_PASS=likebutton
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - articles-network
   articles-api:
     container_name: articles-api
+    restart: on-failure
     image: articles-api
     build:
       context: .
@@ -18,42 +71,24 @@ services:
       - 'articles-db'
       - 'articles_rabbitmq'
       - 'articles-flyway'
+      - 'mongo'
     env_file:
-      - articles-api.env    
-  articles-db:
-    container_name: articles-db
-    restart: always
-    image: postgres:11-alpine
-    ports:
-      - '5432:5432'
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: articles_db
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - articles-api.env
+  like-service:
+    container_name: like-service
+    restart: on-failure
+    image: like-service
+    build:
+      context: .
+      dockerfile: ./src/LikeService/Dockerfile
     networks:
       - articles-network
-  articles-flyway:
-    container_name: articles-flyway
-    image: boxfuse/flyway:5.2.4
-    command: -url=jdbc:postgresql://articles-db:5432/articles_db?user=postgres&password=postgres -locations='filesystem:/opt/scripts' -outOfOrder=true migrate
-    volumes:
-      - ./scripts:/opt/scripts
     depends_on:
       - 'articles-db'
-    networks:
-      - articles-network
-  articles_rabbitmq:
-    container_name: articles_rabbitmq
-    image: rabbitmq:management-alpine
-    environment:
-      - RABBITMQ_DEFAULT_USER=likebutton
-      - RABBITMQ_DEFAULT_PASS=likebutton
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - articles-network
+      - 'articles_rabbitmq'
+      - 'mongo'
+    env_file:
+      - articles-api.env
 networks:
   articles-network:
     driver: bridge
