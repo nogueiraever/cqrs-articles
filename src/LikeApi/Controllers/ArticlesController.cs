@@ -11,13 +11,13 @@ namespace LikeApi.Controllers
     [ApiController]
     public class ArticlesController : ControllerBase
     {
-        [HttpGet("{articleId}")]
+        [HttpGet("{articleId}/likes")]
         public async Task<IActionResult> GetArticleLikes(Guid articleId, [FromServices] IMediator mediator)
         {
             return Ok(await mediator.Send(new GetArticleLikesQuery(articleId)));
         }
 
-        [HttpPost("{articleId}")]
+        [HttpPost("{articleId}/likes")]
         public async Task<IActionResult> Like(Guid articleId, [FromServices] IMediator mediator)
         {
             return Ok(await mediator.Send(new LikeArticleCommand(articleId)));

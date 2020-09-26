@@ -56,53 +56,6 @@ services:
       retries: 5
     networks:
       - articles-network
-  articles-api:
-    container_name: articles-api
-    restart: on-failure
-    image: articles-api
-    build:
-      context: .
-      dockerfile: ./src/LikeApi/Dockerfile
-    ports:
-      - '8080:80'
-    networks:
-      - articles-network
-    depends_on:
-      - 'articles-db'
-      - 'articles_rabbitmq'
-      - 'articles-flyway'
-      - 'mongo'
-    env_file:
-      - articles.env
-  like-service:
-    container_name: like-service
-    restart: on-failure
-    image: like-service
-    build:
-      context: .
-      dockerfile: ./src/LikeService/Dockerfile
-    networks:
-      - articles-network
-    depends_on:
-      - 'articles-db'
-      - 'articles_rabbitmq'
-      - 'mongo'
-    env_file:
-      - articles.env
-  articles-frontend:
-    container_name: articles-frontend
-    image: articles-frontend
-    build:
-      context: .
-      dockerfile: ./src/frontend/Dockerfile
-    ports:
-      - '80:80'
-    networks:
-      - articles-network
-    depends_on:
-      - 'articles-api'
-    env_file:
-      - articles.env
 networks:
   articles-network:
     driver: bridge

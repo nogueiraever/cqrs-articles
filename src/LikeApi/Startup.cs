@@ -24,16 +24,17 @@ namespace LikeApi
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting();
+            app.UseCors(builder => builder
+                 .AllowAnyOrigin()
+                 .AllowAnyMethod()
+                 .AllowAnyHeader());
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseMvc();
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddResponseCompression();
             services.Configure<BrotliCompressionProviderOptions>(options =>
             {
@@ -50,7 +51,7 @@ namespace LikeApi
 
             services.AddMvc(options =>
             {
-                options.EnableEndpointRouting = true;
+                options.EnableEndpointRouting = false;
                 options.Filters.Add(new GlobalExceptionFilter());
             })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);

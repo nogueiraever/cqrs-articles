@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  articles-frontend:
+    container_name: articles-frontend
+    image: articles-frontend
+    build:
+      context: .
+      dockerfile: ./src/frontend/Dockerfile
+    ports:
+      - '80:80'
+    networks:
+      - articles-network
+    env_file:
+      - articles.env
+networks:
+  articles-network:
+    driver: bridge
