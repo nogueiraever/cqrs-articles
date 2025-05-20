@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.IdGenerators;
+using MongoDB.Bson.Serialization.Serializers;
 using System;
 
 namespace Data.Mongo
@@ -11,7 +12,7 @@ namespace Data.Mongo
         public static void Configure()
         {
             BsonSerializer.RegisterIdGenerator(typeof(Guid), CombGuidGenerator.Instance);
-            BsonDefaults.GuidRepresentation = GuidRepresentation.Standard;
+            BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
 
             BsonClassMap.RegisterClassMap<Article>(c =>
             {
